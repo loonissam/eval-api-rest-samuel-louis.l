@@ -19,7 +19,7 @@ npm install
 2. Créer une base vide nommée `entre_nous` (avec phpMyAdmin, ou en ligne de commande) :
 
 ```sql
-CREATE DATABASE entre_nous CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE entre_nous CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ```
 
 3. Les tables `users`, `posts` et `comments` n'ont pas besoin d'être créées à la main : elles sont créées automatiquement au premier démarrage du serveur (`sequelize.sync()`). Les données restent en base après un redémarrage.
