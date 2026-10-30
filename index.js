@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const { db } = require('./config/association.js');
 const authRoutes = require('./routes/auth.routes.js');
-const userRoutes = require('./routes/user.routes.js');
 const postRoutes = require('./routes/post.routes.js');
 
 const app = express();
@@ -11,7 +10,6 @@ const PORT = process.env.PORT || 3001;
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 
 app.use((req, res) => {
