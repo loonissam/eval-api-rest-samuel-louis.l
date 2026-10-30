@@ -4,14 +4,14 @@
   "description": "",
   "scripts": {
     "dev": "vite",
-    "server": "node --watch server/index.js",
-    "start": "node server/index.js",
+    "server": "node --watch index.js",
+    "start": "node index.js",
     "build": "vite build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
+  "type": "commonjs",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "dotenv": "^18.0.9",
