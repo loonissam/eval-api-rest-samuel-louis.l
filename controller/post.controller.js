@@ -11,7 +11,7 @@ const postInclude = () => [
 
 exports.getAll = async (req, res) => {
     const posts = await Post.findAll({
-        include: postInclude,
+        include: postInclude(),
         order: [
             ['createdAt', 'DESC'],
             [{ model: Comment, as: 'comments' }, 'createdAt', 'ASC']
@@ -28,7 +28,7 @@ exports.create = async (req, res) => {
     }
 
     const post = await Post.create({ content: text, userId: req.user.id });
-    const fullPost = await Post.findByPk(post.id, { include: postInclude });
+    const fullPost = await Post.findByPk(post.id, { include: postInclude() });
     return res.status(201).json(fullPost);
 }
 
@@ -45,6 +45,6 @@ exports.addComment = async (req, res) => {
     }
 
     const comment = await Comment.create({ content: text, postId: post.id, userId: req.user.id });
-    const fullComment = await Comment.findByPk(comment.id, { include: [authorInclude] });
+    const fullComment = await Comment.findByPk(comment.id, { include: [authorInclude()] });
     return res.status(201).json(fullComment);
 }
