@@ -3,6 +3,7 @@ const express = require('express');
 const { db } = require('./config/association.js');
 const authRoutes = require('./routes/auth.routes.js');
 const userRoutes = require('./routes/user.routes.js');
+const postRoutes = require('./routes/post.routes.js');
 
 const app = express();
 const PORT = process.env.PORT;
@@ -11,6 +12,11 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/posts', postRoutes);
+
+app.use((req, res) => {
+    res.status(404).json({ error: 'Route introuvable' });
+});
 
 app.use((err, req, res, next) => {
     if (err.type === 'entity.parse.failed') {
@@ -19,7 +25,7 @@ app.use((err, req, res, next) => {
     console.error(err);
     res.status(500).json({ error: 'Erreur interne du serveur' });
 });
-
+ 
 async function start() {
     try {
         await db.authenticate();
