@@ -1,0 +1,125 @@
+{
+  "info": {
+    "name": "Entre nous",
+    "description": "Les 7 routes obligatoires."
+  },
+  "item": [
+    {
+      "name": "1. Inscription",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "http://localhost:3001/api/auth/register",
+        "description": "Public. Attendu : 201 avec { token, user }. Copier le token pour les routes protégées.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"bonjour123\"\n}"
+        }
+      }
+    },
+    {
+      "name": "2. Connexion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "http://localhost:3001/api/auth/login",
+        "description": "Public. Attendu : 200 avec { token, user }.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"bonjour123\"\n}"
+        }
+      }
+    },
+    {
+      "name": "3. Utilisateur connecté",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer TOKEN"
+          }
+        ],
+        "url": "http://localhost:3001/api/auth/me",
+        "description": "Protégé. Attendu : 200 avec { id, username }. Remplacer TOKEN dans l'en-tête Authorization."
+      }
+    },
+    {
+      "name": "4. Lire le fil",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "http://localhost:3001/api/posts",
+        "description": "Public. Attendu : 200."
+      }
+    },
+    {
+      "name": "5. Créer une publication",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer TOKEN"
+          }
+        ],
+        "url": "http://localhost:3001/api/posts",
+        "description": "Protégé. Attendu : 201 avec l'objet complet. Copier son id pour la requête 6.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"Bonjour tout le monde !\"\n}"
+        }
+      }
+    },
+    {
+      "name": "6. Commenter une publication",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer TOKEN"
+          }
+        ],
+        "url": "http://localhost:3001/api/posts/ID_PUBLICATION/comments",
+        "description": "Protégé. Remplacer ID_PUBLICATION dans l'URL par l'id de la requête 5. Attendu : 201. 404 si l'id n'existe pas.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"Bienvenue !\"\n}"
+        }
+      }
+    },
+    {
+      "name": "7. Déconnexion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer TOKEN"
+          }
+        ],
+        "url": "http://localhost:3001/api/auth/logout",
+        "description": "Protégé. Attendu : 204 sans corps."
+      }
+    }
+  ]
+}
