@@ -3,7 +3,7 @@ const db = require('./../config/db.js');
 
 const User = db.define('User', {
     id: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING(36),
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
         allowNull: false
