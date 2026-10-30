@@ -2,11 +2,11 @@ const Post = require('./../models/posts.models.js');
 const Comment = require('./../models/comment.models.js');
 const User = require('./../models/user.models.js');
 
-const authorInclude = { model: User, as: 'author', attributes: ['id', 'username'] };
+const authorInclude = () => ({ model: User, as: 'author', attributes: ['id', 'username'] });
 
-const postInclude = [
-    authorInclude,
-    { model: Comment, as: 'comments', include: [authorInclude] }
+const postInclude = () => [
+    authorInclude(),
+    { model: Comment, as: 'comments', include: [authorInclude()] }
 ];
 
 exports.getAll = async (req, res) => {
