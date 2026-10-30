@@ -4,8 +4,8 @@
   "description": "",
   "scripts": {
     "dev": "vite",
-    "server": "node --watch server/index.js",
-    "start": "node server/index.js",
+    "server": "node --watch index.js",
+    "start": "node index.js",
     "build": "vite build"
   },
   "keywords": [],
