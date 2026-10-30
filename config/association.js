@@ -1,7 +1,7 @@
 const db = require('./../config/db.js');
-const User = require('./user.models.js');
-const Post = require('./posts.models.js');
-const Comment = require('./comment.models.js');
+const User = require('../models/user.models.js');
+const Post = require('../models/posts.models.js');
+const Comment = require('../models/comment.models.js');
 
 User.hasMany(Post, { foreignKey: 'userId' });
 Post.belongsTo(User, { foreignKey: 'userId', as: 'author' });
