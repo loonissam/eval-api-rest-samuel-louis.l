@@ -1,12 +1,10 @@
-const  argon2 = require('argon2');
+const bcrypt = require('bcryptjs');
 const User = require('./../models/user.models.js');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const { revokedTokens } = require('./../middleware/auth.middleware.js');
 
-const hashPassword = (password) => argon2.hash(password, {
-    type: argon2.argon2id,
-    memoryCost: 65536,
-    timeCost: 3
-});
+const hashPassword = (password) => bcrypt.hash(password, 10);
 
 const publicUser = (user) => {
     const data = user.get({ plain: true });
@@ -14,50 +12,62 @@ const publicUser = (user) => {
     return data;
 };
 
-exports.login = async (req, res) => {
-    const { email, password } = req.body || {};
-    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail) || typeof password !== 'string' || !password) {
-        return res.status(400).json({ message: 'Email et mot de passe requis' });
-    }
-
-    const user = await User.findOne({
-        where: { email: normalizedEmail }
-    });
-    if(!user){
-        return res.status(401).json({ message: 'Identifiants incorrects' });
-    }
-    const valid = await argon2.verify(user.password, password);
-    if(!valid){
-        return res.status(401).json({ message: 'Identifiants incorrects' });
-    }
+const createToken = (user) => {
     if (!process.env.JWT_KEY) {
         throw new Error('JWT_KEY is not configured');
     }
-    const token = jwt.sign({
-        id: user.id
-    }, process.env.JWT_KEY, { expiresIn: '1h' });
-    return res.status(200).json({ token });
-}
+    return jwt.sign({ id: user.id }, process.env.JWT_KEY, { expiresIn: '1h', jwtid: crypto.randomUUID() });
+};
 
-exports.signin = async (req, res) => {
-    const { email, password } = req.body || {};
-    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail) || typeof password !== 'string' || password.length < 8) {
-        return res.status(400).json({ message: 'Un email et un mot de passe d’au moins 8 caractères sont requis' });
+exports.login = async (req, res) => {
+    const { username, password } = req.body || {};
+    if (typeof username !== 'string' || !username.trim() || typeof password !== 'string' || !password) {
+        return res.status(401).json({ error: 'Identifiants incorrects' });
     }
 
     const user = await User.findOne({
-        where: { email: normalizedEmail }
+        where: { username: username.trim() }
+    });
+    if(!user){
+        return res.status(401).json({ error: 'Identifiants incorrects' });
+    }
+    const valid = await bcrypt.compare(password, user.password);
+    if(!valid){
+        return res.status(401).json({ error: 'Identifiants incorrects' });
+    }
+    return res.status(200).json({ token: createToken(user), user: publicUser(user) });
+}
+
+exports.signin = async (req, res) => {
+    const { username, password } = req.body || {};
+    const name = typeof username === 'string' ? username.trim() : '';
+    if (name.length < 2 || name.length > 30) {
+        return res.status(400).json({ error: 'Un pseudo de 2 à 30 caractères est requis' });
+    }
+    if (typeof password !== 'string' || password.length < 6) {
+        return res.status(400).json({ error: 'Un mot de passe d’au moins 6 caractères est requis' });
+    }
+
+    const user = await User.findOne({
+        where: { username: name }
     });
     if(user){
-        return res.status(409).json({ message: 'Cet utilisateur existe déjà' });
+        return res.status(409).json({ error: 'Ce pseudo est déjà utilisé' });
     }
 
     const hash = await hashPassword(password);
     const newUser = await User.create({
-        email: normalizedEmail,
+        username: name,
         password: hash
     });
-    return res.status(201).json(publicUser(newUser));
+    return res.status(201).json({ token: createToken(newUser), user: publicUser(newUser) });
+}
+
+exports.me = (req, res) => {
+    return res.status(200).json(req.user);
+}
+
+exports.logout = (req, res) => {
+    revokedTokens.add(req.token);
+    return res.status(204).end();
 }

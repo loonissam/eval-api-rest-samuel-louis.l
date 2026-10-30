@@ -1,17 +1,26 @@
-exports.auth = (req, res, next) => {
-    console.log(req);
-}
+const jwt = require('jsonwebtoken');
+const User = require('./../models/user.models.js');
 
-exports.auth = (req, res, next) => {
+const revokedTokens = new Set();
+exports.revokedTokens = revokedTokens;
+
+exports.auth = async (req, res, next) => {
+    const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
 
-    if (!token) {
-        res.status(401).json({ message: 'Vous devez être connecté pour accéder à cette ressource' })
-    } 
-    try {
-        const payload = jwt.verify(token, process.env.JWT_SECRET);
-        next();
-    } catch (error) {
-        return res.status(401).json({ message: 'Vous devez être connecté pour accéder à cette ressource' })
+    if (!token || revokedTokens.has(token)) {
+        return res.status(401).json({ error: 'Vous devez être connecté pour accéder à cette ressource' })
     }
+    try {
+        const payload = jwt.verify(token, process.env.JWT_KEY);
+        const user = await User.findByPk(payload.id, { attributes: ['id', 'username'] });
+        if (!user) {
+            return res.status(401).json({ error: 'Vous devez être connecté pour accéder à cette ressource' })
+        }
+        req.user = user;
+        req.token = token;
+    } catch (error) {
+        return res.status(401).json({ error: 'Vous devez être connecté pour accéder à cette ressource' })
+    }
+    next();
 }

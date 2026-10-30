@@ -1,4 +1,4 @@
-const argon2 = require('argon2');
+const bcrypt = require('bcryptjs');
 const User = require('./../models/user.models.js');
 
 const publicUser = (user) => {
@@ -8,15 +8,23 @@ const publicUser = (user) => {
 };
 
 exports.create = async (req, res) => {
-    const { email, password } = req.body || {};
-    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail) || typeof password !== 'string' || password.length < 8) {
-        return res.status(400).json({ message: 'Un email et un mot de passe d’au moins 8 caractères sont requis' });
+    const { username, password } = req.body || {};
+    const name = typeof username === 'string' ? username.trim() : '';
+    if (name.length < 2 || name.length > 30) {
+        return res.status(400).json({ error: 'Un pseudo de 2 à 30 caractères est requis' });
+    }
+    if (typeof password !== 'string' || password.length < 6) {
+        return res.status(400).json({ error: 'Un mot de passe d’au moins 6 caractères est requis' });
+    }
+
+    const existing = await User.findOne({ where: { username: name } });
+    if (existing) {
+        return res.status(409).json({ error: 'Ce pseudo est déjà utilisé' });
     }
 
     const user = await User.create({
-        email: normalizedEmail,
-        password: await argon2.hash(password, { type: argon2.argon2id })
+        username: name,
+        password: await bcrypt.hash(password, 10)
     });
     return res.status(201).json(publicUser(user));
 }
