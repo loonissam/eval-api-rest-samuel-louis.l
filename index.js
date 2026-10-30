@@ -6,7 +6,7 @@ const userRoutes = require('./routes/user.routes.js');
 const postRoutes = require('./routes/post.routes.js');
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3001;
 
 app.use(express.json());
 
@@ -25,7 +25,7 @@ app.use((err, req, res, next) => {
     console.error(err);
     res.status(500).json({ error: 'Erreur interne du serveur' });
 });
- 
+
 async function start() {
     try {
         await db.authenticate();
